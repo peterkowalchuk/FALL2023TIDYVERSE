@@ -1,0 +1,90 @@
+---
+title: "assignment8"
+output:
+  html_document: default
+  pdf_document: default
+date: "2023-10-29"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## The readr package is used to read rectangular data like csv files in a fast way. using the read_csv, the readr package can store the csv into a dataframe
+```{r}
+# Load the readr package
+library(readr)
+library(tidyverse)
+
+library(ggplot2)  # Load ggplot2 for visualization
+theUrl <- "https://raw.githubusercontent.com/Kingtilon1/Assignmnet8-data607/main/1_lebron_james_shot_chart_1_2023.csv"
+lebron <- read_csv(theUrl)
+```
+The readr package can handle missing values by specifying it during it being read like the following 
+```{r}
+theLebron <- read_csv(theUrl, na = c("NA", "N/A", "missing"))
+```
+
+## Column specification
+The readr package can also guess the kind of data within a column
+```{r}
+guess_parser(lebron$'left')
+
+```
+## Data Types and Column specifications
+you can speficy the column types during reading
+```{r}
+lebron2 <- read_csv(theUrl, col_types = cols(
+  top = col_double(),
+  left = col_double(),
+  date = col_character(),
+  qtr = col_character(),
+  time_remaining = col_character(),
+  result = col_logical(),
+  shot_type = col_integer(),
+  distance_ft = col_double(),
+  lead = col_logical(),
+  lebron_team_score = col_integer(),
+  opponent_team_score = col_integer(),
+  opponent = col_character(),
+  team = col_character(),
+  season = col_integer(),
+  color = col_character()
+))
+```
+
+## DPLYR RELOCATE FUNCTIONS(i know we could use one package, but the dplyr package is my favorite)
+I also want to mention how the relocate function is used in the dplyr package incase you may want to prioritze certain columns being seen than other, or it might make more sense for you to shift around some columns withput removing them completely
+
+```{r}
+lebron_switch <- lebron %>%
+  relocate(top, left, .after = "qtr")
+```
+
+Here we moved the top and left column to appear after the qtr column
+
+## Conclusion
+the readr function is great for reading rectangular data, not just csv files, but you can also read tab-separated value files as well. The readr package is great for parsing data as we've seen in how we easily imported a csv file from github to our local r-markdown file for analysis
+
+## other packages and their respectful useful functions
+```{r}
+
+# Task 2: Filter Rows, dplyr package
+lebron_filtered <- filter(lebron, lebron$result == "TRUE")
+
+# Task 3: Create New Variables
+lebron$ScoreDifference <- lebron$lebron_team_score - lebron$opponent_team_score
+```
+
+```{r}
+## grouping functions , dplyr package
+lebron_summary <- lebron %>%
+  group_by(qtr) %>%
+  summarise(average_score = mean(ScoreDifference, na.rm = TRUE))
+
+# Task 5: Visualize Data
+ggplot(data = lebron_filtered, aes(x = left, y = top, color = qtr)) +
+  geom_point() +
+  labs(title = "Lebron James Shot Distribution by Quarter")
+
+```

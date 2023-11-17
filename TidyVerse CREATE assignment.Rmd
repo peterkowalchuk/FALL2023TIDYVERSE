@@ -1,0 +1,65 @@
+---
+title: "TidyVerse CREATE assignment"
+author: "Mikhail Broomes"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Libraries 
+
+
+```{r cars}
+library(tidyverse)
+library(readr)
+
+```
+
+## Joins in R 
+
+In this vignette, I will demonstrate how to perform a full join using the dplyr package in R. We'll work with two datasets containing movie ratings for the years 2021 and 2022. The goal is to merge these datasets and create a comprehensive list of movie ratings, keeping all movies from both years and filling in missing values with NA where necessary.
+
+
+## Dataset Description
+
+We have two datasets:
+
+movieratings_2021 contains movie ratings for the year 2021.
+movieratings_2022 contains movie ratings for the year 2022.
+We want to merge these datasets based on a common key, which in this case is a unique identifier for each movie.
+
+
+
+```{r pressure, echo=TRUE}
+movieratings_2021 <- read_csv("https://raw.githubusercontent.com/MAB592/Data-607-Assignments/main/The%20Hollywood%20Inider%20-%20all%20data%20-%202021.csv")
+movieratings_2022 <- read_csv("https://raw.githubusercontent.com/MAB592/Data-607-Assignments/main/The%20Hollywood%20Inider%20-%20all%20data%20-%202022.csv")
+
+head(movieratings_2021)
+head(movieratings_2022)
+```
+## Performing a Full Join
+
+To merge the datasets, we will use the full_join function from the dplyr package. This function performs a full join, ensuring that all rows from both datasets are included in the result, and missing values are filled with NA for non-matching rows.
+
+```{r}
+
+full_movie_ratings <- full_join(movieratings_2021, movieratings_2022, by = "Film")
+
+```
+
+
+
+```{r}
+head(full_movie_ratings)
+```
+
+
+## Conclusion 
+
+In this vignette, we demonstrated how to perform a full join using the dplyr package in R to merge movie ratings data for two different years. The full join ensures that all movies are included in the result, even if they are unique to a specific year. This technique is useful for combining data from multiple sources, ensuring that no information is lost during the merge.
+

@@ -1,0 +1,75 @@
+---
+title: "TidyVerse Recipe"
+author: "Zainab.O"
+date: "2023-10-29"
+output: html_document
+---
+OKAY , so I am being asked to CREATE a project using tidyverse
+
+
+Let's get into the assignment 
+
+The purpose of this assignment is the following:
+Your task here is to Create an Example.  Using one or more TidyVerse packages, and any dataset from fivethirtyeight.com or Kaggle, create a programming sample “vignette” that demonstrates how to use one or more of the capabilities of the selected TidyVerse package with your selected data set.
+
+We decided on tattoo data because I like them but my mother and Co believe them to be things for the heathens
+so the article touch me and my stressed out heart.
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+DOWNLOAD PACKAGES
+```{r}
+library(tidyverse)
+library(dplyr)
+library(readr)
+```
+
+```{r}
+datadf = read_csv("https://raw.githubusercontent.com/fivethirtyeight/data/master/nba-tattoos/nba-tattoos-data.csv")
+```
+```{r}
+head(datadf)
+```
+```{r}
+summary(datadf)
+```
+#Here I used  pipe and the group_by_all function to count all the "no" and "yes"  and create a new dataframe
+```{r}
+newdf = datadf %>%
+  group_by(`Tattoos yes/no`) %>%
+  count()
+
+newdf
+```
+#Here I have a bar graph demonstrating the frequency of no tattoos vs tattoos of the basketball players in my data
+```{r}
+newdf %>%
+  ggplot(aes(x=`Tattoos yes/no`,y=n, fill=`Tattoos yes/no`))+
+  geom_bar(stat = "identity")+
+  ggtitle("The Count of Basketball Players with Tattos vs those without")
+```
+
+This bar graph demonstrates that there is  a very small difference in count between basketball players that have tattoos versus those that do not have tattoo. I made this graph using  ggplot to create a bar graph and tidyverse to group and count all the "no" together and counted all the "yes" together. 
+```{r cars}
+
+```
+
+
+Reference 
+data : https://raw.githubusercontent.com/fivethirtyeight/data/master/nba-tattoos/nba-tattoos-data.csv
+Article: https://fivethirtyeight.com/features/what-ethan-swan-learned-from-tracking-every-tattoo-in-the-nba/
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

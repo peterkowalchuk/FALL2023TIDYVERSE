@@ -1,0 +1,119 @@
+---
+title: "tidyverse: scaling and labeling for ggplots"
+author: "Kelly Eng"
+date: "2023-11-05"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Functions for ggplot2
+
+## Comparing Avengers
+
+Source: https://fivethirtyeight.com/features/avengers-death-comics-age-of-ultron/
+
+According to the article, 69 had died at least once.
+
+```{r, warning=FALSE}
+
+# Read csv file from fivethirtyeight.com's GitHub and use the pipe operator to select only the columns we want
+avengers <- read_csv("https://raw.githubusercontent.com/fivethirtyeight/data/master/avengers/avengers.csv") %>%
+  filter(!is.na(`Name/Alias`)) %>%
+  select(`Name/Alias`, Appearances, `Current?`, Gender, Year, `Years since joining`, Honorary, Death1, Death2, Death3, Death4, Death5)
+
+# Gets all the indices that are null for Death2
+indices_for_na_death2 <- is.na(avengers$Death2)
+# Fill the NAs with the NO string
+avengers$Death2[indices_for_na_death2] = "NO"
+
+# Repeat for 3 or more deaths with NA values
+indices_for_na_death3 <- is.na(avengers$Death3)
+avengers$Death3[indices_for_na_death3] = "NO"
+indices_for_na_death4 <- is.na(avengers$Death4)
+avengers$Death4[indices_for_na_death4] = "NO"
+indices_for_na_death5 <- is.na(avengers$Death5)
+avengers$Death5[indices_for_na_death5] = "NO"
+
+# There is a large gap for the heroes that debuted in 1900 and those that did later, the year closest to 1900 is 1963
+avengers <- avengers %>%
+  filter(Year != 1900)
+
+# Create new column using the mutate function and case_when
+# case_when comes from dplyr in tidyverse, it checks multiple cases compared to the binary results of ifelse
+# Default condition is TRUE, in this case if there are no deaths, that row should be given a value of 0
+avengers <- avengers %>%
+  mutate(num_deaths = case_when(
+    Death5 == "YES" ~ "5",
+    Death4 == "YES" ~ "4",
+    Death3 == "YES" ~ "3",
+    Death2 == "YES" ~ "2",
+    Death1 == "YES" ~ "1",
+    TRUE ~ "0"
+  ))
+```
+
+## 1A: basic ggplot
+
+Q: How much appearances do the Avengers have since their debut?
+A: Use ggplot to compare
+
+```{r}
+avengers %>%
+  ggplot(aes(x = Year, y = Appearances, color = num_deaths)) +
+  labs(x = "Debut Year", y = "Total Appearances", title = "Avengers") +
+  geom_point()
+```
+## 1B How do I add labels?
+
+```{r}
+avengers %>%
+  ggplot(aes(x = Year, y = Appearances, color = num_deaths)) +
+  labs(x = "Debut Year", y = "Total Appearances", title = "Avengers") +
+  geom_text(aes(label = num_deaths)) +
+  geom_point() 
+```
+
+## 2A Adding Scaling
+
+Q: How do we scale the y-axis in log10 scale to make the points less clustered together?
+A: Use  scale_y_log10() 
+
+```{r}
+avengers %>%
+  ggplot(aes(x = Year, y = Appearances, color = num_deaths)) +
+  labs(x = "Debut Year", y = "Total Appearances", title = "Avengers") +
+  geom_text(aes(label = num_deaths)) +
+  scale_y_log10() +
+  geom_point() 
+```
+
+## 2B Moving Labels on the X-axis
+
+Q: How do we move labels horizontally?
+A: Use the nudge_x argument in geom_text(), use positive numbers to move the labels right and negative to move them left
+
+```{r}
+avengers %>%
+  ggplot(aes(x = Year, y = Appearances, color = num_deaths)) +
+  labs(x = "Debut Year", y = "Total Appearances", title = "Avengers") +
+  geom_text(aes(label = num_deaths), nudge_x = -0.7, size = 3) +
+  scale_y_log10() +
+  geom_point() 
+```
+
+## 2C Moving Labels on the Y-axis
+
+Q: How do we move labels vertically?
+A: Use the nudge_y argument in geom_text(), use positive numbers to move the labels up and negative to move them down
+
+```{r}
+avengers %>%
+  ggplot(aes(x = Year, y = Appearances, color = num_deaths)) +
+  labs(x = "Debut Year", y = "Total Appearances", title = "Avengers") +
+  geom_text(aes(label = num_deaths), nudge_x = -0.7, nudge_y = 0.1, size = 3) +
+  scale_y_log10() +
+  geom_point() 
+```

@@ -1,0 +1,46 @@
+---
+title: "Tidyverse Assignment"
+author: "Steve Phillips"
+date: "2023-11-05"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r}
+library(readr)
+library(tidyr)
+library(dplyr)
+library(tidyverse)
+```
+## I will be showing a few dplyr functions that might be useful
+```{r}
+df <- read_csv("https://raw.githubusercontent.com/sphill12/DATA607/main/mlb_elo.csv")
+```
+```{r}
+glimpse(df)
+```
+## Sometimes we want to apply transformations across multiple columns. The across function is best for manipulating multiple columns in conjunction with the mutate function. Here is an example, where we reduce the amount of decimal places that the data covers for elo ratings
+
+```{r}
+df %>% mutate(across(c(elo1_pre,elo2_pre), round))
+```
+## For easier analysis, sometimes you will want to arrange data in a certain way. The arrange function is useful for these purposes. Here we can see the first data points for baseball elo. The data starts in 1871.
+```{r}
+df %>% arrange((date))
+```
+## Sometimes it is ideal to create dummy variables for easy analysis. The case_when function can be used for these purposes
+```{r}
+df %>% mutate(is_sea = case_when(team1 == "SEA" ~ "Yes"))
+```
+## Another function to help with dummy variables is the if_else function. This allows for splitting things into two groups
+```{r}
+df %>% mutate(is_nym = if_else(team1 == "NYM", "Yes", "No"))
+```
+
+
+
+
+
+
