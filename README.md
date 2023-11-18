@@ -100,3 +100,21 @@ Revision/Addition Description and Link:
 Added a few useful dplyr functions to help with data analysis
 
 https://github.com/peterkowalchuk/FALL2023TIDYVERSE/blob/main/Tidyverse%20demo%20Stephen%20Phillips.Rmd
+
+
+# Updates by Haig Bedros (@hbedros) 
+## Project Overview
+
+This project, an extension of Selina Noori's earlier vignette, is an advanced exploration of the Census Income dataset. Developed by Haig Bedros, this submission delves deeper into data manipulation and analysis using the `tidyverse` suite in R, with a focus on the `dplyr` package.
+
+## Data Source
+The analysis is based on the Census Income dataset, featuring a range of demographic information. This dataset provides a rich source for demonstrating complex data manipulation techniques.
+
+## Analysis Highlights
+- **Data Transformation**: Enhanced manipulation of the dataset, introducing new categorizations and metrics.
+- **Insightful Summaries**: Detailed summaries across multiple demographic groups, revealing deeper insights.
+- **Relationship Exploration**: Investigating correlations between different demographic factors and income levels.
+
+## Conclusion
+This extended analysis by Haig Bedros not only builds upon the foundational work of Selina Noori but also showcases the flexibility and power of `tidyverse` tools in uncovering nuanced insights from complex datasets.
+
