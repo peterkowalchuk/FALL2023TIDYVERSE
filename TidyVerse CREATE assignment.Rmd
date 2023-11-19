@@ -63,3 +63,16 @@ head(full_movie_ratings)
 
 In this vignette, we demonstrated how to perform a full join using the dplyr package in R to merge movie ratings data for two different years. The full join ensures that all movies are included in the result, even if they are unique to a specific year. This technique is useful for combining data from multiple sources, ensuring that no information is lost during the merge.
 
+## Join function in a different context
+
+### cleaning
+Im going to drop the columns with the na values
+```{r}
+## print names in df for copying pasting purposes
+names(full_movie_ratings)
+## store columns to delete in vector
+columns_to_drop <- c("Film list here: https://www.boxofficemojo.com/year/2021/", "Year.y", "Foreign Gross ($million).x","Script Type.x", "Worldwide Gross ($million).x", "% of Gross earned abroad.x", "Oscar Winners.x" , "Oscar Detail.x", "None.x", "financial source, if not The numbers.x", "Domestic Gross.y", "Opening weekend ($million).y","Opening Weekend ($).y", "Genres.y", "Primary Genre.y", "Audience vs Critics deviance.x", "Foreign Gross.x", "Script Type.y", "Rotten Tomatoes  critics.y", "Metacritic  critics.y", "Average critics.y" )
+
+full_movie_ratings <- full_movie_ratings %>% select(-one_of(columns_to_drop))
+```
+
