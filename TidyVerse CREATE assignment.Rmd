@@ -78,21 +78,21 @@ full_movie_ratings <- full_movie_ratings %>% select(-one_of(columns_to_drop))
 The inner_join function, compared to the full_join function, focuses on the common values in both tables, in that the function will only return a table that shares the common identifier between two data frames while the full_join function includes rows form both tables
 ```{r}
 
-## Generating Sample Data for Movie Genres
-movie_genres <- tibble(
+## Generating Sample Data for Movie Location
+movie_location <- tibble(
   Film = c("12 Mighty Orphans", "A Journal for Jordan", "A Quiet Place Part II", "After We Fell"),
   LocationMade = c("USA", "USA", "USA", "Canada")
 )
 
-## Displaying Movie Genres Data
-print(movie_genres)
+## Displaying Movie location Data
+print(movie_location)
 
 ## Inner Join with Movie Ratings
-full_movie_ratings_with_genres <- inner_join(full_movie_ratings, movie_genres, by = "Film")
+full_movie_ratings_with_location <- inner_join(full_movie_ratings, movie_location, by = "Film")
 
 ## Displaying Extended Result
-cat("\nExtended Result with Genres:\n")
-full_movie_ratings_with_genres
+cat("\nExtended Result with location:\n")
+full_movie_ratings_with_location
 
 ```
 
