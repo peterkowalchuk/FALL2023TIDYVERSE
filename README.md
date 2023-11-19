@@ -1,2 +1,3 @@
-# Tidyverse_Extend_LwinShwe
-Adding more annotated codes to extend Tidyverse CREATE assignment submitted by Noori Selina
+# Matthew Roland Tidyverse Extend
+
+Added some more dplyr examples to Stephen Phillips' code; specifically, I added examples of the between() and pull() functions
