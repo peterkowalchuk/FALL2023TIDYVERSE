@@ -74,7 +74,8 @@ columns_to_drop <- c("Film list here: https://www.boxofficemojo.com/year/2021/",
 full_movie_ratings <- full_movie_ratings %>% select(-one_of(columns_to_drop))
 ```
 
-#### I'm going to add on to this example by creating a scenario in which we have more data on movie genres
+#### I'm going to add on to this example by creating a scenario in which we have more data on the location of a movie by using the inner join function.
+The inner_join function, compared to the full_join function, focuses on the common values in both tables, in that the function will only return a table that shares the common identifier between two data frames while the full_join function includes rows form both tables
 ```{r}
 
 ## Generating Sample Data for Movie Genres
@@ -95,7 +96,7 @@ full_movie_ratings_with_genres
 
 ```
 
-## Secoond conclusion
+## Second conclusion
 
 In this extension, we introduced a crucial element to our movie ratings dataset—the "LocationMade" column. This addition enriches our dataset by providing insights into the geographical origins of each film.
 
