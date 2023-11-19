@@ -1,0 +1,164 @@
+---
+title: "DATA 607 TidyVerse CREATE Assignment"
+author: "Lwin Shwe"
+date: "2023-11-04"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### NYC Income Vs Population 
+
+The original data set is downloaded from https://www.kaggle.com/datasets/muonneutrino/new-york-city-census-data. that contains such as total population, racial/ethnic demographic information, employment and community characteristics. The data frame has 2167 observations and 36 variables. The missing value is approximately 1.6% of entire data.
+
+```{r nyc-data}
+#Loading required packages and dataset
+library(tidyverse) #general data analysis environment functions
+library(mice) #multiple imputation
+library(dplyr)
+library(ggplot2)
+
+nyc <- read_csv("https://raw.githubusercontent.com/LwinShwe/DATA607TidyverseCREATE/main/nyc_census_tracts.csv")
+# Get the dimensions of the Data Frame
+dim(nyc)
+# Calculate the percentage of missing data
+missed_data <- sum(is.na(nyc))
+print(paste(round(100 * missed_data / (nrow(nyc) * ncol(nyc)), 5), '% of the total.'))
+# Display the first few rows of the data frame
+print(names(nyc))
+head(nyc)
+```
+
+### Handle Missing and incomplete Data
+
+A missing value is a way to signal an absence of information in a dataset. It’s the equivalent of a blank cell in an Excel spreadsheet. In R, missing values typically look like an NA appearing in a variable, a vector, or a dataframe. However, missing values might be you may also encountered in datasets that aren’t equivalent of blank cells. Sometimes the creators of a dataset will use a numeric value to indicate missing data or a string of characters.
+
+```{r missing-incomplete-data}
+# Calculate the number of NA values in each column of the Data Frame and 'trim' argument is used to control whether to trim (remove) columns with zero NA values,
+na_col_sums <- function(df, trim = TRUE) {
+  na_counts <- colSums(is.na(df))
+  nacols.df <- data.frame(NAs = na_counts)
+  
+  nacols.df$Percent_of_Column <- round(100 * nacols.df$NAs / nrow(df), 2)
+  nacols.df$Percent_of_Incomplete_Rows <- round(100 * nacols.df$NAs / sum(!complete.cases(df)), 2)
+  
+  if (trim) {
+    nacols.df <- nacols.df[nacols.df$NAs != 0, ]
+  }
+  
+  return(nacols.df)
+}
+result <- na_col_sums(nyc)
+result
+```
+
+
+```{r filter-missing-values}
+#function to filter rows containing NAs
+#lim = 0.2 will filter rows where 20% of columns are NA or less, etc. Default lim=0
+#keep=T returns the removed rows instead of the cleaned dataframe
+row_nafilter <- function(df, keep=F, lim=0){
+    row_v <- apply(df, 1, function(x) sum(is.na(x))/length(x) <= lim)
+    if(keep){
+        df[!row_v, ]
+    }else{
+        df[row_v, ]
+    }
+}
+nyc_na.df <- row_nafilter(nyc, keep=T)
+nyc <- nyc[!is.na(nyc$Income), ]
+nyc <- nyc[!is.na(nyc$TotalPop), ]
+nyc <- row_nafilter(nyc, lim=0.2)
+print(paste('Count of NA values in nyc_data: ', sum(is.na(nyc))))
+```
+
+
+### Population Distribution of NYC
+
+A right-skewed Poisson distribution, marred by outliers that could complicate the interpretation of population plots for different populations. One census tract, located in the Northeastern Bronx, exhibits an exceptionally high population of nearly 30,000, nearly ten times the median
+
+```{r population}
+Pop_hist.plot <- ggplot(nyc, aes(x=TotalPop)) + 
+    geom_histogram(colour='black', fill='blue4', bins=50, size=0.2) + 
+    theme_bw() +
+  geom_vline(mapping = NULL, data = NULL, xintercept=median(nyc$TotalPop), colour='red',
+  show.legend = NA) + 
+  labs(title='New York City Population Distribution',
+       y='Number of Tracts',
+       x='Tract Population',
+      caption='Source: ACS 5-Year Estimates, 2015') +
+  theme(plot.caption = element_text(size = 8)) +
+  scale_x_continuous(breaks=c(0, 3622, 10000, 20000, 30000),
+                     labels=c('0', '3622\nNYC Median', '10000', '20000', '30000'))
+Pop_hist.plot
+```
+
+
+### EDA (Income and Total Population in NYC)
+
+
+```{r incomepercap}
+# Income and Total Population have right-skewed distributions
+library(moments)
+
+# Descriptive statistics
+income_mean <- mean(nyc$Income)
+income_median <- median(nyc$Income)
+income_sd <- sd(nyc$Income)
+income_skew <- moments::skewness(nyc$Income)
+
+# Histograms
+par(mfrow=c(1,2))
+hist(nyc$Income, main="Income Histogram")
+hist(nyc$TotalPop, main="Population Histogram")
+
+# Scatterplot
+plot(nyc$TotalPop, nyc$Income, main="Income vs. Total Population Plot")
+
+# Correlation analysis
+correlation <- cor(nyc$Income, nyc$TotalPop)
+
+```
+
+
+### Find out Landowner per Income & Professional
+
+
+```{r landowner}
+# add a variable for whether this household owns land
+nyc <- nyc %>%
+    mutate(landowner = (Income >= 100000 & Professional > 35)) 
+nyc
+# summerize just our new variable
+summary(nyc$landowner)
+```
+```{r Income/Population-per-County}
+boxplot(Income~County,data = nyc,
+        main="Boxplot of Income in Different Counties",
+        xlab="County",ylab="Income")
+boxplot(TotalPop~County,data = nyc,
+        main="Boxplot of Total Population in Different Counties",
+        xlab="County",ylab="Population")
+```
+
+
+``` {r income}
+# plot of each variable  of outcome variable IncomePerCap
+nyc %>%
+  gather(Men, Women, Hispanic, Black, White, Native, Asian, Citizen, Office, Construction,
+         Production, Employed, PublicWork, SelfEmployed, FamilyWork,Unemployment,
+         key = "var", value = "value") %>%
+  ggplot(aes(x = value, y = IncomePerCap)) +
+  geom_point(colour = "blue", alpha = 0.2, size=0.1) +
+  facet_wrap(~ var, scales = "free") +
+  theme_bw()
+```
+
+### Conclusions 
+
+The above graphs illustrate that the estimated average household income in New York amounted to 75,000 U.S. dollars and The population of the City was over 8 millions in 2020, a record high population. This is an increase of 629,057 people since the 2010 Census. The city is characterized by the constant ebb and flow of people that results in a unique level of population “churn” and diversity.
+
+
+

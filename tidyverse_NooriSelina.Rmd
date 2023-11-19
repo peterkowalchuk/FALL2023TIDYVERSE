@@ -1,0 +1,63 @@
+---
+title: "Tidyverse Create Asignment"
+author: "Noori Selina"
+date: "2023-11-07"
+output: pdf_document
+---
+
+```{r}
+# Load necessary libraries
+library(tidyverse)
+```
+
+# Introduction 
+
+This vignette demonstrates how to perform data manipulation and analysis using the dplyr package. We will work with the Census Income dataset, which contains information on individuals' demographics and income levels.The data set can be found here: https://www.kaggle.com/datasets/tawfikelmetwally/census-income-dataset/data
+
+
+# Data Loading 
+To load the data, I will be importing the data from a GitHub link.
+```{r}
+census_data <- read_csv("https://raw.githubusercontent.com/NooriSelina/Data-607/main/censusincome.csv")
+head(census_data)
+```
+# Data Manipulation with dplyr
+The dplyr package provides a set of functions for data manipulation. We will use the following functions to explore the dataset. 
+
+1. Filtering - Using the dplyr package, I will use the `filter()` function to filter the dataset based on specific criteria. In this case, we are interested in individuals with incomes greater than $50,000, so we filter the dataset to include only such individuals.
+
+```{r}
+high_income_data <- census_data %>%
+  filter(Income == ">50K")
+head(high_income_data)
+```
+
+
+2. Grouping and Summarizing - The group_by() and summarize() functions of the dplyr package are valuable for aggregating data. We will group the data by education level and calculate summary statistics for age and hours worked per week within each education category.
+
+```{r}
+income_summary <- high_income_data %>%
+  group_by(Income) %>%
+  summarize(
+    mean_age = mean(Age, na.rm = TRUE),
+    median_hours = median(`Hours per Week`, na.rm = TRUE)
+  )
+
+print(income_summary)
+```
+
+3. Sorting - The arrange() function is used to sort the summarized data. In this example, we sort the education summary by mean age in descending order, which helps identify the education categories with the highest mean age.
+
+```{r}
+high_income_data <- high_income_data %>%
+  arrange(desc(Age))
+
+print(head(high_income_data, 10))
+```
+
+
+# Conclusion
+In this vignette, the `dplyr` package from the `tidyverse` collection was used to efficiently manage and analyze the Census Income dataset. Specifically, the data was filtered using the `filter()` function to focus on high-income individuals, grouped by income levels using the `group_by()` function, and then sorted by mean age with the `arrange()` function.
+
+This approach uncovered valuable insights about the demographics of high-income individuals. The `dplyr` package, along with other tools from the `tidyverse`, made data manipulation tasks straightforward and effective.
+

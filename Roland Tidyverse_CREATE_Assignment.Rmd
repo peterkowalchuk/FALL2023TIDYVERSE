@@ -17,20 +17,22 @@ library(ggplot2)
 
 ## Loading the dataset
 
-The dataset sourced for this assignment contains data related to stroke diagnoses and stroke predictors. These data were provided by kaggle.com (https://www.kaggle.com/datasets/teamincribo/stroke-prediction/)
+The dataset sourced for this assignment contains data related to stroke diagnoses and stroke predictors. These data were provided by kaggle.com (<https://www.kaggle.com/datasets/teamincribo/stroke-prediction/>)
 
 ```{r}
 stroke_pred <- read.csv("https://raw.githubusercontent.com/Mattr5541/DATA_607_CREATE/main/stroke_prediction_dataset.csv")
 
 colnames(stroke_pred)
 ```
+
 ##Using tidyR
 
 As we can see, the dataset is both clean and "tidy" in the sense that every column is a variable, and predictors are laid out (depending on the research question, we can likely collapse certain columns into each other so they may act as clearer predictors, but that will not be the main focus of this vignette)
 
-Although these data are neatly composed and analyzable for the most part, if we look at the "Symptoms" variable, we can see that each observation contains a string composed of words broken up by commas that represent separate symptoms. Such data may be difficult to analyze in such a format, and may require modifications. Fortunately, we can accomplish this through the use of packages such as **tidyr.** The goal will be to first partition these symptoms into separate columns in accordance with the demarcating commas. Following this step, I will use **tidyr's** pivot_longer() function to condense the symptoms into a single, long column 
+Although these data are neatly composed and analyzable for the most part, if we look at the "Symptoms" variable, we can see that each observation contains a string composed of words broken up by commas that represent separate symptoms. Such data may be difficult to analyze in such a format, and may require modifications. Fortunately, we can accomplish this through the use of packages such as **tidyr.** The goal will be to first partition these symptoms into separate columns in accordance with the demarcating commas. Following this step, I will use **tidyr's** pivot_longer() function to condense the symptoms into a single, long column
 
 First, I will use **tidyr's** separate() function to split the columns based on the presence of a comma within the strings
+
 ```{r}
 ##First, I need to determine the maximum number of symptoms in this column
 
@@ -87,7 +89,7 @@ stroke_sum <- stroke_sum %>% pivot_longer(cols = c(neg, pos), names_to = "Diagno
 ggplot(stroke_sum, aes(fill = Diagnosis, x = Symptoms, y = Prop)) + geom_bar(position = "stack", stat = "identity") +  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
-Based on the charts and graph above, we can see that there is an almost 50/50 ratio of participants who have received a stroke diagnosis, and participants who have not. This further extends to symptom composition, which shows that each symptom has an almost 50/50 ratio of individuals who did or did not have a stroke. However, we can see that there is a slightly higher ratio of individuals diagnosed with strokes if they experiences seizures or dizziness. In contrast, those who had difficulty speaking or confusion were also marginally less likely to be diagnosed with a stroke. 
+Based on the charts and graph above, we can see that there is an almost 50/50 ratio of participants who have received a stroke diagnosis, and participants who have not. This further extends to symptom composition, which shows that each symptom has an almost 50/50 ratio of individuals who did or did not have a stroke. However, we can see that there is a slightly higher ratio of individuals diagnosed with strokes if they experiences seizures or dizziness. In contrast, those who had difficulty speaking or confusion were also marginally less likely to be diagnosed with a stroke.
 
 These data indicate that, individually, these symptom categories may not be the best predictors for receiving a stroke diagnosis (and I am using the term "predictor" loosely, since we have not performed any statistical analyses). This is likely because of how interconnected these symptoms are. This analysis could potentially be improved by grouping the symptoms into clusters by using machine learning procedures such as natural language processing.
 
@@ -101,3 +103,95 @@ stroke_long <- stroke_long %>% mutate(Physical_num = recode(Physical.Activity, "
 stroke_long %>% group_by(Physical_num) %>% summarize()
 ```
 
+(\@sleepysloth12 extend contribution)
+
+As a stroke researcher, one important metric collected is called the National Institutes of Health Stroke Scale (NIHSS). The NIHSS was developed by the NIH to standardize and quantify the severity of a stroke. This metric is one common metric that is calculated and reported by stroke researcher's worldwide. Other standardized scales used in stroke research are the Glasgow scale (GCS) [which quantifies a person's consciousness after a brain injury], the Alberta Stroke Program Early CT Score (ASPECTS) [quantifies level of ischemia in brain regions], and the modified rankin scale (MRS) [quantifies level of neurological disability after discharge].
+
+The NIHSS quantifies stroke symptoms by assesing neurological deficit. It ranges from 0-42; where: 0 = no stroke, 1-4 = minor stroke, 5-15 = moderate stroke, 16-20 = moderate to severe stroke, 21-42 = severe stroke. It is cumulative and the mor
+
+Most of stroke research is retrospective, meaning that the data already exists. Since stroke is an emergency and treated promptly, many times NIHSS is not reported in the patients charts. Doctors might calculate it on their phone quickly or a checklist to try to get an idea of what tests/treatment would be the best option for the patient. How do we get the NIHSS for patients if Docs forget to record it? For NIHSS or any of the other values stated above, you can use text data from the charts (doctor and nurse emr reports) to estimate the value.
+
+I will use `tidyverse` to rearrange the data to be more optimal for NIHSS calculation. Then, I will use the `mutate` and `case_when` function to calculate the score. I then used `ggplot2` to plot the distribution of NIHSS scores. For more information about what specifically goes into calculating NIHSS, please visit <https://www.ninds.nih.gov/health-information/public-education/know-stroke/health-professionals/nih-stroke-scale>. It is important to know the common signs of a stroke, since best outcome is correlated with fastest treatment.
+
+```{r}
+
+nihss_dat= stroke_long %>%
+  filter(Diagnosis == "Stroke") %>%
+  select(Symptoms)
+
+#unique(nihss_dat$Symptoms)
+
+nihss_dat = nihss_dat %>%
+  mutate(nihss= case_when(
+    Symptoms == "Difficulty Speaking" ~ 5,
+    Symptoms == "Headache" ~ 0,
+    Symptoms == "Loss of Balance" ~ 3,
+    Symptoms == "Dizziness" ~ 1,
+    Symptoms == "Confusion" ~ 2,
+    Symptoms == "Seizures" ~ 0, #not usually associated w stroke
+    Symptoms == "Severe Fatigue" ~ 0,
+    Symptoms == "Blurred Vision" ~ 3,
+    Symptoms == "Numbness" ~ 2,
+    Symptoms == "Weakness" ~ 15
+  ))
+
+nihss_dat = nihss_dat %>%
+  arrange(nihss)
+
+ggplot(nihss_dat, aes(x = nihss)) +
+  geom_histogram(bins = 43, fill = "blue", color = "black") +
+  labs(title = "Distribution of NIHSS Scores",
+       x = "NIHSS Score",
+       y = "Frequency") +
+  theme_minimal()
+```
+
+I created this as an example of how to calculate NIHSS. In reality, the calculation of NIHSS or any of the other parameters is more comprehensive. Now, we use language learning models that analyze free text to try to estimate NIHSS and ASPECTS. Since NIHSS is cumulative, it would be better to know all of the patients symptoms in order to accurately calculate it. This was just a demonstration. In the future, it would be interesting to see the outcomes of the patients, and find a correlation between NIHSS and outcome after stroke (and compare between treatments).\\
+
+For completeness, I will create a function that calculates NIHSS score. Please enter values between the range. For more info, visit above website.
+
+```{r}
+calculate_nihss = function() {
+  questions = list(
+    list(question = "1a. Level of Consciousness", max_score = 3),
+    list(question = "1b. LOC Questions", max_score = 2),
+    list(question = "1c. LOC Commands", max_score = 2),
+    list(question = "2. Best Gaze", max_score = 2),
+    list(question = "3. Visual Fields", max_score = 3),
+    list(question = "4. Facial Palsy", max_score = 3),
+    list(question = "5a. Motor Arm - Left", max_score = 4),
+    list(question = "5b. Motor Arm - Right", max_score = 4),
+    list(question = "6a. Motor Leg - Left", max_score = 4),
+    list(question = "6b. Motor Leg - Right", max_score = 4),
+    list(question = "7. Limb Ataxia", max_score = 2),
+    list(question = "8. Sensory", max_score = 2),
+    list(question = "9. Best Language", max_score = 3),
+    list(question = "10. Dysarthria", max_score = 2),
+    list(question = "11. Extinction and Inattention", max_score = 2)
+  )
+
+  total_score = 0
+
+  
+  for (q in questions) {
+    repeat {
+      cat(q$question, "\n")
+      score <- as.integer(readline(prompt = paste("Enter score (0-", q$max_score, "): ")))
+      if (!is.na(score) && score >= 0 && score <= q$max_score) {
+        total_score <- total_score + score
+        break
+      } else {
+        cat("Invalid input. Please enter a number between 0 and", q$max_score, ".\n")
+      }
+    }
+  }
+
+  
+  return(total_score)
+}
+
+# Example usage
+nihss_score = calculate_nihss()
+cat("Total NIHSS Score:", nihss_score, "\n")
+
+```
