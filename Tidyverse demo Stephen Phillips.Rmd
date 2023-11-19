@@ -40,7 +40,32 @@ df %>% mutate(is_nym = if_else(team1 == "NYM", "Yes", "No"))
 ```
 
 
+# Matthew Roland's Extensions
 
+##Using the "Between" Function
 
+When using a long time-series dataset such as this, you may want to only look at a subset of values. For instance, perhaps you don't want to view/analyze player information from the 1800s due to a lack of relevance, or the bearth of missing data unique to that time-period. To work around this, we can use dplyr's "between" function to subset a range of dates that we are interested in. Let's say we want to only examine the 2022 and 2023 seasons:
 
+```{r}
+str(df)
 
+df_filt <- df %>% filter(between(season, 2022, 2023))
+
+df_filt <- df_filt %>% arrange(date)
+glimpse(df_filt)
+```
+As we can see, we are now left with a dataframe containing only observations from 2022 through 2023
+
+## Pull Function
+
+Maybe you would like to quickly pull up comparisons for each pitchers' scores. Fortunately, you can do this with dplyr's **pull** function, which serves as a neater substitute for native R's **$** operator: 
+
+```{r}
+#First, I'll find the average score for each 1st pitcher
+score <- df_filt %>% group_by(pitcher1) %>% summarize(mean_score = mean(score1))
+
+##And now, let's pull a list of each pitcher and their average scores
+score %>% pull(mean_score, pitcher1)
+```
+
+Now we can quickly see the average score of each player
