@@ -1,0 +1,242 @@
+---
+title: 'Tidyverse: Organizing and Visualizing Geographical Data'
+author: "Jean Jimenez"
+date: "2023-09-24"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Tidyverse Assignment
+
+## Overview
+
+Tidyverse is a package in R that is a collection of many different tools and functions that help make organizing and visualizing data easier. People usually make R packages to make specific tasks easier to do.
+
+For this assignment, I will be demonstrating how to clean and visualize Geographical Data using some Tidyverse functions. I also used some extra packages that work in conjunction with tidyverse. The data set used in this assignment was [NYC Motor Vehicles Crash from June 2012 to Aug 2023](https://www.kaggle.com/datasets/nagasai524/latest-new-york-motor-vehicle-collisions-crashes?resource=download). All car crashes are theoretically recorded by the police. Tidyverse can be helpful in cleaning and also visualizing the data found in this data set.
+
+For the following assignment to work, please install the following packages:
+
+```{r eval=FALSE}
+install.packages(c('readr','ggmap','googledrive','tidyverse','gganimate'))
+```
+
+To reproduce the functionality of this R-Markdown file, please obtain a [google maps api key](https://developers.google.com/maps).
+
+```{r include=FALSE}
+
+my_google_api="AIzaSyCWV6trwz_s7EsVspQHwXavipa8sdurjcc"
+```
+
+Please define your Google Maps API here:
+
+```{r}
+library(readr)
+library(ggmap)
+
+register_google(key=my_google_api)
+```
+
+## Functionality
+
+### Importing from Google Drive
+
+Since the csv data set that I used is too big for GitHub (444 Mb vs 25 Mb max), I will upload it to google drive and pull it from there using the [google drive package which is part of TidyVerse](https://googledrive.tidyverse.org/). To reproduce, get the CSV File here and add it to your google drive. (I tried to use kaggle api with no success).
+
+drive_auth() will open your default browser and ask you to log-in to google drive.
+
+drive_ls (pattern= 'name.csv') will look for a csv file named name and return a google content ID of the file when it gets a match.
+
+drive_download() will download the file to the current working directory.
+
+```{r}
+
+# Load the googledrive package
+library(googledrive)
+library(tidyverse)
+
+#browser auth
+drive_auth()
+
+
+file = drive_ls(pattern = "nyc_crashes.csv")
+
+drive_download(file, path = "nyc_crashes.csv")
+
+nyc_crashes=read.csv('nyc_crashes.csv')
+```
+
+### Cleaning Data
+
+Tidyverse has a lot of function that can help you clean data.
+
+#### Glimpse Function
+
+Glimpse is a dplyr function (included in tidyverse), that returns column information for the data set. In this case, we use it to view the columns and some values of nyc_crashes.
+
+```{r}
+glimpse(nyc_crashes)
+```
+
+#### Select Function
+
+I then wanted to delete columns that didn't matter to us. We can use the select column to either select ( or delete) and rename some variables in our data set. By adding the -c, we are removing the variables (aka columns) listed.
+
+In other words, we pipe nyc_crashes through select, remove the columns, and name the new data frame nyc_crashes_mod.
+
+```{r}
+nyc_crashes_mod = nyc_crashes %>%
+  select(-c(
+    "NUMBER.OF.PERSONS.INJURED",
+    "NUMBER.OF.PERSONS.KILLED",
+    "NUMBER.OF.PEDESTRIANS.INJURED",
+    "NUMBER.OF.PEDESTRIANS.KILLED",
+    "NUMBER.OF.CYCLIST.INJURED",
+    "NUMBER.OF.CYCLIST.KILLED",
+    "NUMBER.OF.MOTORIST.INJURED",
+    "NUMBER.OF.MOTORIST.KILLED",
+    "CONTRIBUTING.FACTOR.VEHICLE.1",
+    "CONTRIBUTING.FACTOR.VEHICLE.2",
+    "CONTRIBUTING.FACTOR.VEHICLE.3",
+    "CONTRIBUTING.FACTOR.VEHICLE.4",
+    "CONTRIBUTING.FACTOR.VEHICLE.5",
+    "COLLISION_ID",
+    "VEHICLE.TYPE.CODE.1",
+    "VEHICLE.TYPE.CODE.2",
+    "VEHICLE.TYPE.CODE.3",
+    "VEHICLE.TYPE.CODE.4",
+    "VEHICLE.TYPE.CODE.5"
+  ))
+```
+
+#### Filter Function
+
+We can use the filter() function to filter the data set based on specific values in a column.
+
+In this case, I first filtered for crashes that occurred in the BOROUGH of QUEENS and placed the results in queens_crashes.
+
+Then, I filtered for crashes that occurred in 2023. To do this, I analyzed the characters that corresponded to the year in the date column string.
+
+```{r}
+#only queens
+
+queens_crashes = nyc_crashes_mod %>%
+  filter(BOROUGH == 'QUEENS')
+
+
+# 2023 Queens only
+
+queens_crashes_2023 = queens_crashes %>%
+  filter(str_sub(CRASH.DATE, 1, 4) == '2023')
+
+glimpse(queens_crashes_2023)
+```
+
+### Visualization
+
+#### Loading Queens Map
+
+While not part of the tidyverse package, the get_map() from the ggmap package was used to get the map of queens from google maps. I entered an api key above. Please enter your own for this to work.
+
+The ggmap package works well with ggplot, which IS in tidyverse.
+
+```{r}
+queens_map = get_map(location = "Queens, NY", zoom = 12)
+```
+
+#### ggplot graphs
+
+Here, I first draw the map of queens using ggmap().
+
+Afterwards I add a layer using the geom_point() function of ggplot. Here, I load the data of queens_car_crashes_2023, and define the x and y variables as longitude and latitude. I sort color by zipcode (each crash in the same zip code will be its own color.
+
+Afterwards, I use the function scale_color_gradientn() to create the color gradient from blue to red.
+
+Finally, I add the labs() function to add a title to the graph.
+
+Displayed should be a map of Queens, NY with each point corresponding to a car crash that occurred in 2023.
+
+```{r}
+ggmap(queens_map) +
+  geom_point(data = queens_crashes_2023, 
+             aes(x = LONGITUDE, y = LATITUDE, color = ZIP.CODE), 
+             alpha = 0.5, size = 1) +
+  scale_color_gradientn(colors = rev(colorRampPalette(c("blue", "red"))(100))) +
+  labs(title = '2023 QUEENS CAR CRASHES')
+```
+
+##### Group By and Summarise Functions
+
+I wanted to find the average number of crashes that occur per zipcode and plot it.
+
+To do this, i first used the group_by() function. I piped queens_crashes_2023 and grouped it by zipcode. Afterwards, I used the summarise() function to calculate the average Longitude and Latitude of each zipcode. I saved this in avg_location_per_zip.
+
+```{r}
+avg_location_per_zip = queens_crashes_2023 %>%
+  group_by(ZIP.CODE) %>%
+  summarise(avg_latitude = mean(LATITUDE, na.rm = TRUE), 
+            avg_longitude = mean(LONGITUDE, na.rm = TRUE),
+            avg_crashes = mean(n(), na.rm = TRUE))
+```
+
+Next, I plotted this data using the same ggplot functions. It shows the mean crash location per zipcode of all crashes in 2023 in Queens.
+
+```{r}
+ggmap(queens_map) +
+  geom_point(data = avg_location_per_zip, 
+             aes(x = avg_longitude, y = avg_latitude, color = avg_crashes), 
+             size = 5, alpha = 0.7) +
+  scale_color_gradientn(colors = rev(colorRampPalette(c("blue", "red"))(100))) +
+  labs(title = 'Average Number of Crashes per ZIP Code in Queens for 2023')
+```
+
+##### gganimate
+
+I wanted to make a graph like above but animated to show the change over the years. To do this, first I cleaned the data up a bit more.
+
+Using the filter() function, I removed NA data points from zipcode column. There were some NA values. Afterwards, I use the mutate() function to convert the crash date string into a date to extract the year.
+
+Then, similar to above I use group_by and summarise to group by zipcode and calculate the average long and lat per zipcode. This is done for each year.
+
+```{r}
+# remove NA
+queens_crashes_clean = queens_crashes %>%
+  filter(!is.na(ZIP.CODE) & !is.na(n()))
+
+# convert crashdate into crashdate
+queens_crashes_clean = queens_crashes_clean %>%
+  mutate(CRASH.DATE = as.Date(CRASH.DATE, format = "%Y-%m-%d"),
+         year = as.integer(format(CRASH.DATE, "%Y")))
+
+avg_location_per_zip_year = queens_crashes %>%
+  mutate(year = as.integer(substr(CRASH.DATE, 1, 4))) %>%
+  group_by(year, ZIP.CODE) %>%
+  summarise(
+    avg_latitude = mean(LATITUDE, na.rm = TRUE),
+    avg_longitude = mean(LONGITUDE, na.rm = TRUE),
+    avg_crashes = n()
+  )
+```
+
+Finally, I use the gganimate to create a graph like above but animated per each year. It will render the gif into your current working directory. To view, go to your working directory and open the gif. gganimate package is not part of tidyverse, however it is built to work well with ggplot as a layer.
+
+```{r}
+
+library(gganimate)
+# animated plot
+anim_map = ggmap(queens_map) +
+  geom_point(data = avg_location_per_zip_year, aes(x = avg_longitude, y = avg_latitude, color = avg_crashes), size = 5, alpha = 0.7) +
+  scale_color_gradientn(colors = rev(colorRampPalette(c("blue", "red"))(100))) +
+  labs(title = 'Average Number of Crashes per ZIP Code in Queens for {closest_state}', x = 'Longitude', y = 'Latitude') +
+  theme_minimal() +
+  transition_states(year, transition_length = 2, state_length = 1) +
+  enter_fade() + 
+  exit_fade()
+
+# save
+anim_save("avg_crashes_per_zip_year_map.gif", animation = anim_map)
+```
