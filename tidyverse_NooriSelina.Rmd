@@ -61,3 +61,70 @@ In this vignette, the `dplyr` package from the `tidyverse` collection was used t
 
 This approach uncovered valuable insights about the demographics of high-income individuals. The `dplyr` package, along with other tools from the `tidyverse`, made data manipulation tasks straightforward and effective.
 
+
+
+### Haig Bedros' Changes
+
+To extend Selina Noori's code I will introduce a few more `dplyr` functions that can be used for further data manipulation and analysis. 
+
+Given the structure of your `census_data` dataset, it seems that there is no direct column to join with the `education_data` on a state basis. Since `census_data` does not have a `STATE` or similar column, we'll need to adapt our approach. One possibility is to use the `Native Country` field, but this doesn't seem to align well with the state-based `education_data`.
+
+However, we can still demonstrate advanced `dplyr` techniques using just the `census_data`. Here's how the vignette can be adjusted:
+
+---
+
+```{r}
+# Load the dplyr library, part of tidyverse
+library(tidyverse)
+```
+
+## Advanced Data Manipulation with dplyr
+
+### Mutating Data
+
+Let's start by categorizing individuals based on their age. We can create a new column `age_group` to facilitate this analysis.
+
+```{r}
+census_data <- census_data %>%
+  mutate(age_group = case_when(
+    Age <= 25 ~ "Young",
+    Age > 25 & Age <= 50 ~ "Adult",
+    TRUE ~ "Senior"
+  ))
+```
+
+### Summarizing Across Multiple Groups
+
+Next, we can group the data by `age_group` and `Education` to understand the distribution of education levels across different age groups.
+
+```{r}
+education_age_summary <- census_data %>%
+  group_by(age_group, Education) %>%
+  summarize(
+    average_hours = mean(`Hours per Week`, na.rm = TRUE),
+    count = n(),
+    median_income = median(`Final Weight`, na.rm = TRUE)
+  )
+
+print(education_age_summary)
+```
+
+### Exploring Gender and Workclass
+
+We can also explore the relationship between gender, workclass, and income. This will help us understand how these factors interact.
+
+```{r}
+gender_workclass_summary <- census_data %>%
+  group_by(Gender, Workclass) %>%
+  summarize(
+    high_income_count = sum(Income == ">50K"),
+    total_count = n()
+  )
+
+print(gender_workclass_summary)
+```
+
+## Conclusion
+
+In this revised vignette, we demonstrated the power of `dplyr` in manipulating and analyzing the `census_data` dataset. We created new categories, summarized data across multiple groups, and explored the relationships between gender, workclass, and income. These techniques from the `tidyverse` collection are crucial for effective data analysis and provide a foundation for more complex analytical tasks.
+
