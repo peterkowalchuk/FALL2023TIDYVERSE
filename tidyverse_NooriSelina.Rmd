@@ -62,6 +62,7 @@ In this vignette, the `dplyr` package from the `tidyverse` collection was used t
 This approach uncovered valuable insights about the demographics of high-income individuals. The `dplyr` package, along with other tools from the `tidyverse`, made data manipulation tasks straightforward and effective.
 
 
+
 ### Haig Bedros' Changes
 
 To extend Selina Noori's code I will introduce a few more `dplyr` functions that can be used for further data manipulation and analysis. 
@@ -126,3 +127,4 @@ print(gender_workclass_summary)
 ## Conclusion
 
 In this revised vignette, we demonstrated the power of `dplyr` in manipulating and analyzing the `census_data` dataset. We created new categories, summarized data across multiple groups, and explored the relationships between gender, workclass, and income. These techniques from the `tidyverse` collection are crucial for effective data analysis and provide a foundation for more complex analytical tasks.
+

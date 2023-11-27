@@ -1,0 +1,221 @@
+---
+title: "DATA 607 Tidyverse ExtendA ssignment"
+author: "Lwin Shwe"
+date: "2023-11-18"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+This Tidyverse EXTEND assignment was performed on the basis of the Tidyverse CREATE assignment by Noori Selina.
+
+```{r}
+# Load necessary libraries
+library(tidyverse)
+```
+
+# Introduction 
+
+This vignette demonstrates how to perform data manipulation and analysis using the dplyr package. We will work with the Census Income dataset, which contains information on individuals' demographics and income levels.The data set can be found here: https://www.kaggle.com/datasets/tawfikelmetwally/census-income-dataset/data
+
+
+# Data Loading 
+To load the data, I will be importing the data from a GitHub link.
+```{r}
+census_data <- read_csv("https://raw.githubusercontent.com/NooriSelina/Data-607/main/censusincome.csv")
+head(census_data)
+```
+# Data Manipulation with dplyr
+The dplyr package provides a set of functions for data manipulation. We will use the following functions to explore the dataset. 
+
+1. Filtering - Using the dplyr package, I will use the `filter()` function to filter the dataset based on specific criteria. In this case, we are interested in individuals with incomes greater than $50,000, so we filter the dataset to include only such individuals.
+
+```{r}
+high_income_data <- census_data %>%
+  filter(Income == ">50K")
+head(high_income_data)
+```
+
+
+2. Grouping and Summarizing - The group_by() and summarize() functions of the dplyr package are valuable for aggregating data. We will group the data by education level and calculate summary statistics for age and hours worked per week within each education category.
+
+```{r}
+income_summary <- high_income_data %>%
+  group_by(Income) %>%
+  summarize(
+    mean_age = mean(Age, na.rm = TRUE),
+    median_hours = median(`Hours per Week`, na.rm = TRUE)
+  )
+
+print(income_summary)
+```
+
+3. Sorting - The arrange() function is used to sort the summarized data. In this example, we sort the education summary by mean age in descending order, which helps identify the education categories with the highest mean age.
+
+```{r}
+high_income_data <- high_income_data %>%
+  arrange(desc(Age))
+
+print(head(high_income_data, 10))
+```
+
+
+# Conclusion
+In this vignette, the `dplyr` package from the `tidyverse` collection was used to efficiently manage and analyze the Census Income dataset. Specifically, the data was filtered using the `filter()` function to focus on high-income individuals, grouped by income levels using the `group_by()` function, and then sorted by mean age with the `arrange()` function.
+
+This approach uncovered valuable insights about the demographics of high-income individuals. The `dplyr` package, along with other tools from the `tidyverse`, made data manipulation tasks straightforward and effective.
+
+
+## TidyVerse EXTEND: Graphical Representation of census-income data analysis 
+
+The first variable Age is a continuous variable. As an initial step, two histograms are plotted.
+
+```{r extend-visualization}
+# histogram of age by income group
+ggplot(census_data) + aes(x=as.numeric(Age), group=Income, fill=Income) + 
+  geom_histogram(binwidth=1, color='black')
+
+# histogram of age by gender group
+ggplot(census_data) + aes(x=as.numeric(Age), group=Gender, fill=Gender) + 
+  geom_histogram(binwidth=1, color='black')
+```
+It is noticed that majority of the female has income less than 50K but make can make money more than $50,000 a year. For those do make over $50,000 annually, they are mainly in midcareer. Interestingly, females are It is noticed that majority of the observations make less than $50,000 a year. For those do make over $50,000 annually, they are mainly in midcareer. Interestingly, females are overrepresented. This could be possibly caused by census bias.
+The average age of most working group lies around 42 for both gender who earn maximum annual income and there are more male than female in the working industries.
+
+The variable Workclass stands for the industry in which the responding unit is employed.
+
+```{r workclass}
+library(ggplot2)
+library(dplyr)
+
+# Delete rows with "?" and "Armed-Forces" in Workclass Column
+census_data <- census_data %>%
+  filter(!(Workclass %in% c("?", "Never-worked")))
+
+# combine into Government job
+census_data$Workclass<- gsub('^Federal-gov', 'Government', census_data$Workclass)
+census_data$Workclass <- gsub('^Local-gov', 'Government', census_data$Workclass)
+census_data$Workclass <- gsub('^State-gov', 'Government', census_data$Workclass) 
+
+# combine into Sele-Employed job
+census_data$Workclass <- gsub('Self-emp-inc','Self-Employed', census_data$Workclass)
+census_data$Workclass <- gsub('Self-emp-not-inc','Self-Employed', census_data$Workclass)
+
+census_data$Workclass <- as.factor(census_data$Workclass)
+summary(census_data$Workclass)
+```
+
+Notice that there are two small groups – Never-worked and Without-pay. I will combine them with Unknowns into a group called Other/Unknown. Those who work in the government are further break down into federal, state, and local levels. To facilitate the analysis, I group them into one group called Government. While those who are self-employed fall into two groups, incorporated and not incorporated, and are grouped into Self-Employed.
+
+
+To calculate counts and proportions, and then creates a bar plot showing the relationship between industry and income across different Workclass categories.
+
+```{r income-vs-workclass}
+
+# barplot of job type by income group
+# get the counts by industry and income group
+count <- table(census_data[census_data$Workclass == 'Government',]$Income)["<=50K"]
+count <- c(count, table(census_data[census_data$Workclass == 'Government',]$Income)[">50K"])
+
+count <- c(count, table(census_data[census_data$Workclass == 'Private',]$Income)["<=50K"])
+count <- c(count, table(census_data[census_data$Workclass == 'Private',]$Income)[">50K"])
+count <- c(count, table(census_data[census_data$Workclass == 'Self-Employed',]$Income)["<=50K"])
+count <- c(count, table(census_data[census_data$Workclass == 'Self-Employed',]$Income)[">50K"])
+count <- c(count, table(census_data[census_data$Workclass == 'Without-pay',]$Income)["<=50K"])
+count <- c(count, table(census_data[census_data$Workclass == 'Without-pay',]$Income)[">50K"])
+count <- as.numeric(count)
+
+# create a dataframe
+industry <- rep(levels(census_data$Workclass), each = 2)
+Income <- rep(c('<=50K', '>50K'), 4)
+df <- data.frame(industry, Income, count)
+df
+
+```
+```{r plot}
+# Get the counts by Workclass and Income group
+counts_workclass_income <- sapply(unique(census_data$Workclass), function(w) {
+  sapply(c('<=50K', '>50K'), function(inc) {
+    sum(census_data$Income[census_data$Workclass == w] == inc)
+  })
+})
+
+# Create a dataframe
+df <- data.frame(
+  Workclass = rep(unique(census_data$Workclass), each = 2),
+  Income = rep(c('<=50K', '>50K'), times = length(unique(census_data$Workclass))),
+  Count = as.vector(counts_workclass_income)
+)
+
+# Plotting the bar plot
+ggplot(df, aes(x = Workclass, y = Count, fill = Income)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(x = "Workclass", y = "Count", title = "Counts of Income Group by Workclass") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))  # Rotate x-axis labels for better readability
+
+```
+Those who are self employed have the highest tendency of making greater than $50,000 a year.
+
+Since education_num is a continuous representation of education, a stacked bar plot is used to visualize the relationship between education_num and income, in-group proportions are calculated as well.
+
+
+``` {r education}
+# create a dataframe
+df1 <- data.frame(table(census_data$Income, census_data$EducationNum))
+names(df1) <- c('Income', 'EducationNum', 'count')
+df1
+
+# Plotting the bar plot
+ggplot(df1, aes(x = as.factor(EducationNum), y = count, fill = Income)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(x = "Education Number", y = "Count", title = "Counts of Income by Education Number") +
+  theme_minimal()
+```
+It is not hard to notice that the in group proportion of making greater than $50,000 a year increase as the years of education increases. For those who don’t have any forms of college education (less than or equal to 8 years of education), less than 10% have an annual income of greater than $50,000. While for those with doctorate degrees, nearly 3 out of 4 makes greater than $50,000 a year.
+
+
+```{r occupation}
+
+# Delete rows with "?" and "Armed-Forces" in Occupation Column
+census_data <- census_data %>%
+  filter(!(Occupation %in% c("?", "Armed-Forces")))
+
+census_data$Occupation <- gsub('Adm-clerical', 'White-Collar', census_data$Occupation)
+census_data$Occupation <- gsub('Craft-repair', 'Blue-Collar', census_data$Occupation)
+census_data$Occupation <- gsub('Exec-managerial', 'White-Collar', census_data$Occupation)
+census_data$Occupation <- gsub('Farming-fishing', 'Blue-Collar', census_data$Occupation)
+census_data$Occupation <- gsub('Handlers-cleaners', 'Blue-Collar', census_data$Occupation)
+census_data$Occupation <- gsub('Machine-op-inspct', 'Blue-Collar', census_data$Occupation)
+census_data$Occupation <- gsub('Other-service', 'Service', census_data$Occupation)
+census_data$Occupation <- gsub('Priv-house-serv', 'Service', census_data$Occupation)
+census_data$Occupation <- gsub('Prof-specialty', 'Professional', census_data$Occupation)
+census_data$Occupation <- gsub('Protective-serv', 'Service', census_data$Occupation)
+census_data$Occupation <- gsub('Tech-support', 'Service', census_data$Occupation)
+census_data$Occupation <- gsub('Transport-moving', 'Blue-Collar', census_data$Occupation)
+
+census_data$Occupation <- as.factor(census_data$Occupation)
+summary(census_data$Occupation)
+
+# create a dataframe
+df2 <- data.frame(table(census_data$Income, census_data$Occupation))
+names(df2) <- c('Income', 'Occupation', 'count')
+df2
+
+# using dplyr functions
+df2 <- df2 %>%
+  group_by(Occupation) %>%
+  mutate(percent = count/sum(count) * 100,
+         pos = cumsum(count) - 0.5 * count)
+
+# Plotting the bar plot for df2
+ggplot(df2, aes(x = Occupation, y = count, fill = Income)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(x = "Occupation", y = "Count", fill = "Income", title = "Count of Income Levels by Occupation") +
+  geom_text(aes(label = paste0(round(percent), "%")), position = position_dodge(width = 0.9), vjust = -0.5) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+
+
