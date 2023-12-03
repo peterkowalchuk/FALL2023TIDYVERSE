@@ -12,7 +12,7 @@ Initial Description and Link:
 * https://github.com/autistic96/FALL2023TIDYVERSE/blob/main/ggplot_scaling_and_labeling.Rmd
 
 
-  
+
 Revision/Addition Description and Link:
 * Modified ggplot/forcats example to demonstrate sorting, other category
 * https://github.com/peterkowalchuk/FALL2023TIDYVERSE/blob/main/ggplot_forcats_fall.rmd
@@ -48,7 +48,7 @@ Additional Contribution:
  The core R packages used are.
     - dplyr 1.1.2
     - readr 2.1.4
-  
+
 
 ## Joins in R
 In this repository, you will find information on how to perform a full join using the dplyr package in R. The focus is on merging two datasets containing movie ratings for the years 2021 and 2022. The goal is to combine these datasets and create a comprehensive list of movie ratings, ensuring that all movies from both years are included and missing values are filled with NA where necessary.
@@ -102,6 +102,20 @@ Added a few useful dplyr functions to help with data analysis
 
 https://github.com/peterkowalchuk/FALL2023TIDYVERSE/blob/main/Tidyverse%20demo%20Stephen%20Phillips.Rmd
 
+# Tidyverse_Extend_LwinShwe
+Adding more annotated codes to extend Tidyverse CREATE assignment submitted by Noori Selina
+
+## Extention of Mikhail's vignette by Tilon Bobb:
+Created a similar example to the join function in the dplyr package
+
+https://github.com/Kingtilon1/FALL2023TIDYVERSE/blob/tilon-bobbs-branch/TidyVerse%20CREATE%20assignment.Rmd
+
+## Readr package vignette by Tilon Bobb
+
+Talked about the capabilities of the readr package
+can be found [here](https://github.com/Kingtilon1/FALL2023TIDYVERSE/blob/main/tidyversehw.Rmd)
+=======
+
 
 # Updates by Haig Bedros (@hbedros) 
 ## Project Overview
@@ -122,4 +136,5 @@ This extended analysis by Haig Bedros not only builds upon the foundational work
 
 # Tidyverse_Extend_LwinShwe
 Adding more annotated codes to extend Tidyverse CREATE assignment submitted by Noori Selina
+
 
