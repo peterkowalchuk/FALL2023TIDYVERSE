@@ -1,0 +1,61 @@
+---
+title: "Data 607 - TidyVerse CREATE assignment"
+author: "Shamecca Marshall"
+date: "2023-10-15"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+In this assignment, you’ll practice collaborating around a code project with GitHub.  You could consider our collective work as building out a book of examples on how to use TidyVerse functions.
+
+GitHub repository:  https://github.com/peterkowalchuk/FALL2023TIDYVERSE
+
+FiveThirtyEight.com datasets.
+
+Kaggle datasets. 
+
+Your task here is to Create an Example.  Using one or more TidyVerse packages, and any dataset from fivethirtyeight.com or Kaggle, create a programming sample “vignette” that demonstrates how to use one or more of the capabilities of the selected TidyVerse package with your selected dataset. (25 points)
+
+Later, you'll be asked to extend an existing vignette.  Using one of your classmate’s examples (as created above), you'll then extend his or her example with additional annotated code. (15 points)
+
+## Load Libraries
+```{r}
+library(ggplot2)
+library(dplyr)
+library(ggthemes)
+```
+
+## Read CSV
+
+I wanted to view the population, HIV Deaths, and life expectancy of Kenya throughout the years. Original data can be found at the link :
+https://www.kaggle.com/datasets/amirhosseinmirzaie/countries-life-expectancy
+```{r}
+Life_expectancy <- read.csv("https://raw.githubusercontent.com/Meccamarshall/Data607/main/life_expectancy.csv")
+colnames(Life_expectancy)
+```
+## Kenya Population
+```{r}
+Kenya_Population <- Life_expectancy%>%
+filter(Country == "Kenya")%>%
+ggplot(aes(Year, Population, group = 1)) + geom_point(na.rm=TRUE, color = "hotpink") + geom_line(na.rm=TRUE, color = "orange")+
+  labs(title = "Kenya Population Throughout the Years", x = "Year", y = "Population (million)")
+Kenya_Population
+```
+
+## Kenya HIV Deaths
+```{r}
+HIV_deaths_Kenya <- Life_expectancy%>%
+filter(Country == "Kenya")%>%
+ggplot(aes(Year, HIV.AIDS, group = 1)) + geom_point(na.rm=TRUE, color = "hotpink") + geom_line(na.rm=TRUE, color = "orange")+
+  labs(title = "Kenya deaths caused by AIDS of the last 4-year-olds", x = "Year", y = "HIV/AIDS Deaths")
+HIV_deaths_Kenya
+```
+## Kenya Life Expectancy 
+```{r}
+Kenya_Life_expectancy <- Life_expectancy%>%
+filter(Country == "Kenya")%>%
+ggplot(aes(Year, Life.expectancy, group = 1)) + geom_point(na.rm=TRUE, color = "hotpink") + geom_line(na.rm=TRUE, color = "orange")+
+  labs(title = "Kenya Life Expenctancy Throughout the Years", x = "Year", y = "Life expectancy")
+Kenya_Life_expectancy
+```

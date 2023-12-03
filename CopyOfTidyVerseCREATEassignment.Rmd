@@ -1,0 +1,70 @@
+---
+title: "607 Tidyverse Extend"
+author: "Ariann Chai"
+date: "2023-11-19"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+For my Tidyverse Extend assignment, I will be extending Mikhail Broomes's Tidyverse Create assignment. This Create assignment was on using dplyr to create a full join between two datasets. Today, I will demonstrate how to perform other joins with the two datasets.
+
+## Libraries 
+```{r cars}
+library(tidyverse)
+library(dplyr)
+library(readr)
+```
+
+## Create assignment
+In the original Create assignment, Mikhail demonstrated how to perform a full join using the dplyr package in R. The two datasets used contained movie ratings for the years 2021 and 2022. 
+
+Here is the work for getting the two datasets and the full join from the Create assignment:  
+```{r create, echo=TRUE}
+movieratings_2021 <- read_csv("https://raw.githubusercontent.com/MAB592/Data-607-Assignments/main/The%20Hollywood%20Inider%20-%20all%20data%20-%202021.csv")
+movieratings_2022 <- read_csv("https://raw.githubusercontent.com/MAB592/Data-607-Assignments/main/The%20Hollywood%20Inider%20-%20all%20data%20-%202022.csv")
+
+movieratings_2021
+movieratings_2022
+
+full_movie_ratings <- full_join(movieratings_2021, movieratings_2022, by = "Film")
+full_movie_ratings
+```
+
+Full join means that the new dataset created will contain all the data from the two original datasets even if they differ in observations (or columns). This will in turn create a lot of null values in the new datasets.  
+
+## Extend assignment
+For this Extend assignment, I will use two datasets to create the other three joins: left, right, and inner. Since the two datasets contain movies released in 2021 and the other is in 2022, there will not be any overlap in these so I will bring in a new movie dataset for highest grossing movies to use. (https://www.kaggle.com/datasets/therealoise/top-1000-highest-grossing-movies-of-all-time/data)  
+
+```{r third dataset, echo=TRUE}
+movieratings_highest <- read_csv("Top_1000_Highest_Grossing_Movies_Of_All_Time.csv")
+##movie title column needs the same name as movies_ratings's column, Film
+colnames(movieratings_highest)[1] = "Film"
+movieratings_highest
+
+full_movie_ratings <- full_join(movieratings_2021, movieratings_highest, by = "Film")
+full_movie_ratings[ , c(1,15,17,21)]
+```
+```
+
+A left join will return a dataset with everything from the first dataset and from the second dataset: the rows or data that have a match in the first dataset. 
+```{r left}
+left_movie_ratings <- left_join(movieratings_2021, movieratings_highest, by = "Film")
+left_movie_ratings[ , c(1,15,17,21)]
+```
+
+A right join will do the opposite of a left join and return a dataset with everything from the second dataset and from the first dataset: the rows or data that have a match in the second dataset.  
+```{r right}
+right_movie_ratings <- right_join(movieratings_2021, movieratings_highest, by = "Film")
+right_movie_ratings[ , c(1,15,17,21)]
+```
+
+A inner join will only return the rows that are in both datasets.  
+```{r inner}
+inner_movie_ratings <- inner_join(movieratings_2021, movieratings_highest, by = "Film")
+inner_movie_ratings[ , c(1,15,17,21)]
+```
+

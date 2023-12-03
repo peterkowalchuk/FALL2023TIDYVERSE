@@ -1,3 +1,4 @@
+
 # Shared Commits
 ## Add the commit to the code you are sharing in this readme file
 ## After submitting your commit, add a line to this readme file describing the commit, and a link to your markdown file
@@ -20,7 +21,7 @@ Revision/Addition Description and Link:
 Folorunsho Atanda Addition
 * Demonstration of using map() from the purrr package
 * Github link: https://github.com/folushoa/Data-Science/tree/Data-607/Tidyverse
-=======
+
 
 # Updates by Haig Bedros (@hbedros)
 
@@ -100,6 +101,7 @@ Revision/Addition Description and Link:
 Added a few useful dplyr functions to help with data analysis
 
 https://github.com/peterkowalchuk/FALL2023TIDYVERSE/blob/main/Tidyverse%20demo%20Stephen%20Phillips.Rmd
+
 # Tidyverse_Extend_LwinShwe
 Adding more annotated codes to extend Tidyverse CREATE assignment submitted by Noori Selina
 
@@ -112,3 +114,27 @@ https://github.com/Kingtilon1/FALL2023TIDYVERSE/blob/tilon-bobbs-branch/TidyVers
 
 Talked about the capabilities of the readr package
 can be found [here](https://github.com/Kingtilon1/FALL2023TIDYVERSE/blob/main/tidyversehw.Rmd)
+=======
+
+
+# Updates by Haig Bedros (@hbedros) 
+## Project Overview
+
+This project, an extension of Selina Noori's earlier vignette, is an advanced exploration of the Census Income dataset. Developed by Haig Bedros, this submission delves deeper into data manipulation and analysis using the `tidyverse` suite in R, with a focus on the `dplyr` package.
+
+## Data Source
+The analysis is based on the Census Income dataset, featuring a range of demographic information. This dataset provides a rich source for demonstrating complex data manipulation techniques.
+
+## Analysis Highlights
+- **Data Transformation**: Enhanced manipulation of the dataset, introducing new categorizations and metrics.
+- **Insightful Summaries**: Detailed summaries across multiple demographic groups, revealing deeper insights.
+- **Relationship Exploration**: Investigating correlations between different demographic factors and income levels.
+
+## Conclusion
+This extended analysis by Haig Bedros not only builds upon the foundational work of Selina Noori but also showcases the flexibility and power of `tidyverse` tools in uncovering nuanced insights from complex datasets.
+
+
+# Tidyverse_Extend_LwinShwe
+Adding more annotated codes to extend Tidyverse CREATE assignment submitted by Noori Selina
+
+

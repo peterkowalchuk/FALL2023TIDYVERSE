@@ -1,0 +1,182 @@
+---
+title: "Tidyverse - Create (stringr)"
+author: "Gavriel Steinmetz-Silber"
+date: "2023-11-04"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+In this document, I'll demonstrate some of the capabilities of the Tidyverse package "stringr." I'll do this by working on a dataset with information about movies from 2007 - 2009 (source: https://www.kaggle.com/datasets/sujaykapadnis/hollywood-hits-and-flops-2007-2023).
+
+The stringr package has a number of functions designed to ease our work with strings. This cheatsheet is incredibly helpful: https://github.com/rstudio/cheatsheets/blob/main/strings.pdf
+
+As outlined in the cheatsheet, these functions fall into 7 categories: 
+1. Detect matches
+2. Subset strings
+3. Manage lengths
+4. Mutate strings
+5. Join and split
+6. Order strings
+7. Helpers
+
+I'll load the dataset (actually using a different Tidyverse package to bind the original ones):
+```{r}
+library(readr)
+library(tidyverse)
+movies07 = read_csv("https://raw.githubusercontent.com/gsteinmetzsilber/DATA607--Tidyverse/main/The%20Hollywood%20Inider%20-%20all%20data%20-%202007.csv")
+movies08 = read_csv("https://raw.githubusercontent.com/gsteinmetzsilber/DATA607--Tidyverse/main/The%20Hollywood%20Inider%20-%20all%20data%20-%202008.csv")
+movies09 = read_csv("https://raw.githubusercontent.com/gsteinmetzsilber/DATA607--Tidyverse/main/The%20Hollywood%20Inider%20-%20all%20data%20-%202009.csv")
+
+movies = rbind(movies07, movies08, movies09)
+head(movies)
+```
+
+Now we have this dataset of 373 movies. A few columns are strings, namely: 
+
+```{r}
+names(movies)[sapply(movies, is.character)]
+```
+
+stringr is potentially helpful with any of these columns. 
+
+## stringr: Detect Matches
+
+The first category of stringr functions I'll discuss is functions that help detect matches. str_detect is aptly named; if checks whether strings contain a pattern:
+
+```{r}
+library(stringr)
+str_detect(movies$Film, "Christmas")
+```
+
+This is neither aesthetically pleasing nor helpful. We can use sum() as well to figure out how many of the movies in the dataset have Christmas in the title:
+
+```{r}
+sum(str_detect(movies$Film, "Christmas"))
+```
+
+On a similar note, str_starts and str_ends checks whether a string has a certain pattern at its beginning or end (respectively).
+
+Let's see how many movies start with the word "I." Note, I'll use regex here (and it's generally extremely useful with stringr): 
+
+```{r}
+sum(str_starts(movies$Film, "I\\s"))
+```
+
+The functions thus far have returned logical vectors. We can then sum up the number of TRUEs and that might have given us interesting results (depending on what one considers interesting). str_which returns indices. For example, let's see which rows have films with the word "love" in the title: 
+
+
+```{r}
+str_which(movies$Film, "Love")
+```
+
+Now, I don't mind the occasional romance movie, but suppose someone *hated* romance movies and couldn't even stand having them in the dataset. Well then having the indices of these "Love" movies is incredibly useful:
+
+```{r}
+indices = str_which(movies$Film, "Love")
+movies = movies[-indices, ] 
+```
+
+And just to prove it worked:
+
+```{r}
+str_which(movies$Film, "Love")
+```
+
+There are now no movies in the dataset with "Love" in the title. Bitter people might now be much happier, so maybe this dataset is better from a utilitarian perspective.
+
+Let's wrap up this section by seeing how common digits are in titles. In particular, I want to get a sense of how many digits there are in each title. We can use str_count to this end:
+
+```{r}
+str_count(movies$Film, "\\d")
+```
+
+This gives a nice, albeit slightly dizzying, overview of the matter at hand. Most titles don't have any diigits, a bunch have 1 or 2, and then a few have more than 2. This concludes my overview of stringr's functions that detect matches. I now move on to another of stringr's capabilities: 
+
+### Subset strings
+
+In the genre column, there are sometimes multiple genres listed. 
+
+```{r}
+count = str_count(movies$Genre, ",")
+count+1
+```
+
+In fact, a bunch of movies have two or three genres. Let's say (and I don't know that this is true) that the first listed genre is the primary genre. Let's create a column with that primary genre. Note: there already is a column nmeant to list the primary genres. But it's largely filled with missing values.
+
+We essentially want to subset that first genre from the list of genres. We can use str_sub to this end. For this function, we need the start and end indices for the part that we want to subset. Now, we can just use 1 for the start. But for the end, we will have to use the str_locate function to locate the place of that first comma.
+
+```{r}
+movies$Actual_Primary_Genre <- ifelse(
+  str_detect(movies$Genre, ","), 
+  str_sub(movies$Genre, start = 1, end = str_locate(movies$Genre, ",") - 1), # -1 to not include the comma
+  movies$Genre #if there are no commas, then Actual_Primary_Genre should just be the same as Genre 
+)
+```
+
+Let's also delete the old primary genre column: 
+
+```{r}
+movies = movies %>% 
+  select(-"Primary Genre")
+```
+
+We could have also used str_extract to figure out the first genre in that column. In fact, it would have been much easier than str_sub. str_extract, well, extracts the first match in each string. Here my pattern will be everything before a comma or everything other than a comma before the end of the string (in case there's no comma):
+
+```{r}
+p_genres_again = str_extract(movies$Genre, "^[^,]+(?=[,])|^[^,]+$")
+head(p_genres_again, 10)
+```
+
+I'll show one final stringr function, this one is for returning the first match, as a matrix. Let's say we didn't have a year column. But we do have a release date column, and so we can leverage that to extract the year:
+```{r}
+years = str_match(movies$`Release Date (US)`, "(?<=[,]\\s)20\\d\\d")
+movies$again_year = years
+```
+
+And just to confirm that this did a pretty good job: 
+
+```{r}
+years_same = movies %>% 
+  filter(Year == again_year) %>% 
+  nrow()
+
+nrow(movies) - years_same
+100 * years_same / nrow(movies) 
+```
+
+OK, so something went slightly wrong; there are 2 movies that I didn't extract the right year for by using the US release date. But that's a pretty good result; we got 99.5% of the years right just by quickly matching a pattern in the US release date (which might not even have been the first release date).
+
+## Conclusion
+
+In this exercise, I took a look at the tidyverse package "stringr" and some of its capabilities. I worked with a dataset of 2007-2009 movies and focused on using stringr to detect matches and subset strings. 
+
+This work is ready to be extended. As a reminder, if I covered two capabilities of stringr, the other ones are:  
+
+3. Manage lengths
+4. Mutate strings
+5. Join and split
+6. Order strings
+7. Helpers
+
+I think managing lengths, and joining and splitting are particularly interesting. 
+
+And as one more reminder to the extender,the cheatsheet I linked to in the introduction will be helpful. 
+
+## TidyVerse Extend 
+
+Using str_extract to extract the release date for the movie then adding it to a new column 
+
+```{r}
+
+movies_extended <- movies %>%
+  mutate(release_day = str_extract(`Release Date (US)`, "[0-9]+"))
+
+head(movies_extended)
+
+```
+

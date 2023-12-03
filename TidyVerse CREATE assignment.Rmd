@@ -63,3 +63,44 @@ head(full_movie_ratings)
 
 In this vignette, we demonstrated how to perform a full join using the dplyr package in R to merge movie ratings data for two different years. The full join ensures that all movies are included in the result, even if they are unique to a specific year. This technique is useful for combining data from multiple sources, ensuring that no information is lost during the merge.
 
+## Join function in a different context
+
+### cleaning
+
+
+```{r}
+columns_to_drop <- c("Film list here: https://www.boxofficemojo.com/year/2021/", "Oscar detail.x")
+
+full_movie_ratings <- full_movie_ratings %>% select(-one_of(columns_to_drop))
+```
+
+#### I'm going to add on to this example by creating a scenario in which we have more data on the location of a movie by using the inner join function.
+The inner_join function, compared to the full_join function, focuses on the common values in both tables, in that the function will only return a table that shares the common identifier between two data frames while the full_join function includes rows form both tables
+```{r}
+
+## Generating Sample Data for Movie Location
+movie_location <- tibble(
+  Film = c("12 Mighty Orphans", "A Journal for Jordan", "A Quiet Place Part II", "After We Fell"),
+  LocationMade = c("USA", "USA", "USA", "Canada")
+)
+
+## Displaying Movie location Data
+print(movie_location)
+
+## Inner Join with Movie Ratings
+full_movie_ratings_with_location <- inner_join(full_movie_ratings, movie_location, by = "Film")
+
+## Displaying Extended Result
+cat("\nExtended Result with location:\n")
+full_movie_ratings_with_location
+
+```
+
+## Second conclusion
+
+In this extension, we introduced a crucial element to our movie ratings dataset—the "LocationMade" column. This addition enriches our dataset by providing insights into the geographical origins of each film.
+
+The inner join seamlessly integrated the location data with our existing movie ratings dataset, facilitating a more comprehensive analysis. The "LocationMade" column opens avenues for exploration, allowing us to delve into how movie ratings correlate with the production locations. This enhancement transforms our dataset into a valuable resource for studying regional trends and contributions to the film industry.
+
+In summary, the inclusion of the "LocationMade" column not only augments the completeness of our dataset but also expands the scope of potential analyses, making our exploration of movie ratings more nuanced and insightful.
+

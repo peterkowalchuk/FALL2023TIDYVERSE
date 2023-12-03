@@ -37,7 +37,6 @@ head(movies)
 ```
 
 Now we have this dataset of 373 movies. A few columns are strings, namely: 
-
 ```{r}
 names(movies)[sapply(movies, is.character)]
 ```
@@ -166,3 +165,64 @@ This work is ready to be extended. As a reminder, if I covered two capabilities 
 I think managing lengths, and joining and splitting are particularly interesting. 
 
 And as one more reminder to the extender,the cheatsheet I linked to in the introduction will be helpful. 
+
+## TIDYVERSE EXTEND - Edited by Dirk Hartog
+
+To extend the stringr package in the tidyverse library, I took Gavriel's suggestion about looking at some of the other capabilities and functions of the stringr package. 
+
+I will first look at mutating strings. One way that we can make filtering a little easier is by not having to worry about values being case sensitive. Using str_upper() we can convert all of our character data to upper case. 
+```{r character data to upper case}
+
+# Using more than functions in the stringr package (across(), and where() are from dplyr)
+# the str_to_upper is being supplied to the function across(). 
+
+movies <- movies %>% mutate(across(where(is.character), str_to_upper))
+head(movies)
+```
+
+
+Next I would like to work on the column Oscar Details. Some movies have multiple awards listed in the Oscar Details column that would be more helpful as separate observations. We can use stringr functions as well to split the string and then transform the dataframe into a longer one with unnest_longer from the tidyr package.  
+
+```{r}
+movies$`Oscar Detail` <- str_split(movies$`Oscar Detail`, ",") unne
+```
+
+```{r}
+movies <- movies %>% unnest_longer(`Oscar Detail`)
+```
+
+Since we broke up a string that contained all of the oscar winning categories with a space we want to check if those spces were carried over. We can use a few more stringr functions to make sure our Oscar Detail values are clean by first checking and then removing the white space. We can use str_starts() to check whether or not there are any white spaces at the beginning of the string.  
+
+```{r check for white space}
+sum(str_starts(movies$`Oscar Detail`, " "), na.rm = TRUE)
+sum(str_ends(movies$`Oscar Detail`, " "), na.rm = TRUE)
+```
+
+To clean up the string we can use str_trim(). 
+
+```{r trim white space}
+movies$`Oscar Detail` <- str_trim(movies$`Oscar Detail`, side = "both")
+
+# check if any values with extra white space 
+sum(str_starts(movies$`Oscar Detail`, " "), na.rm = TRUE)
+```
+
+Now we can visualize the movies in the data set that have won an Oscar.
+```{r}
+movies %>% group_by(Film) %>% summarise(Oscar_wins = sum(!is.na(`Oscar Detail`))) %>% 
+  filter(Oscar_wins > 0) %>%
+  ggplot(aes(x = Oscar_wins, y = fct_reorder(Film, Oscar_wins))) + 
+  geom_col(fill = "white", color = "maroon") + 
+  ggtitle("Number of Oscar Wins") + 
+  xlab("Film") +
+  ylab("Oscar Wins") +
+  theme(axis.title.x = element_text(color="black",size=12),
+        axis.title.y = element_text(color="black", size=12),
+        axis.text.x = element_text(size=10),
+        axis.text.y = element_text(size=6),
+        plot.title = element_text(color = "black",
+                                  size=18))
+```
+
+
+
