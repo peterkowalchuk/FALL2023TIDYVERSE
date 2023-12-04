@@ -108,7 +108,25 @@ income_mean <- mean(nyc$Income)
 income_median <- median(nyc$Income)
 income_sd <- sd(nyc$Income)
 income_skew <- moments::skewness(nyc$Income)
+```
 
+Revised by: Kelly Eng
+The above variables by Lwin wasn't used at all anywhere after it was written.
+New code to display the summary statistics using the summarize function and piping grouped by borough.
+
+```{r}
+nyc |>
+  group_by(Borough) |>
+  summarize(income_mean = mean(Income), income_median = median(Income), income_sd = sd(Income))
+
+# I also extended the Lwin's scatter plot to show color by borough by piping and using ggplot along with adding labels.
+nyc |>
+  ggplot(aes(TotalPop, Income, color=Borough)) +
+  geom_point() +
+  labs(title = "Income and Population in NYC", x = "Total Population", y = "Income")
+```
+
+```{r}
 # Histograms
 par(mfrow=c(1,2))
 hist(nyc$Income, main="Income Histogram")

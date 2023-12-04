@@ -10,6 +10,7 @@ Initial Description and Link:
 
 * Demonstrates how to scale axis and move labels (Kelly)
 * https://github.com/autistic96/FALL2023TIDYVERSE/blob/main/ggplot_scaling_and_labeling.Rmd
+* extended Lwin's Vignette
 
 
 
